@@ -5,3 +5,10 @@
 *.ilk
 *.idb
 *.log
+
+.vs
+*.exe
+*.cso
+*.cso
+*.cso
+*.cso
