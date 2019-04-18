@@ -135,10 +135,11 @@ void GameApp::UpdateScene(float dt)
 		if (isRot)
 		{
 			rot += 0.005f;
-			auto meshData = Geometry::CreateBox();
-			for (int i = 0; i < meshData.vertexVec.size(); i++)
-				meshData.vertexVec[i].rot = XMFLOAT2(cosf(rot), sinf(rot));
-			ResetMesh(meshData);
+			m_VSConstantBuffer.rot = DirectX::XMFLOAT2(cosf(rot), sinf(rot));
+			D3D11_MAPPED_SUBRESOURCE mappedData2;
+			HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[0].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData2));
+			memcpy_s(mappedData2.pData, sizeof(VSConstantBuffer), &m_VSConstantBuffer, sizeof(VSConstantBuffer));
+			m_pd3dImmediateContext->Unmap(m_pConstantBuffers[0].Get(), 0);
 			if (rot >= 360.0f)
 				rot = 0;
 		}
@@ -321,9 +322,10 @@ bool GameApp::InitResource()
 	));
 	m_VSConstantBuffer.proj = XMMatrixTranspose(XMMatrixPerspectiveFovLH(XM_PIDIV2, AspectRatio(), 1.0f, 1000.0f));
 	m_VSConstantBuffer.worldInvTranspose = XMMatrixIdentity();
-	
+	m_VSConstantBuffer.rot = XMFLOAT2(1.0f, 0.0f);
+
 	// 初始化用于PS的常量缓冲区的值
-	// 这里只使用一盏点光来演示
+	// 改为平行光
 	m_PSConstantBuffer.dirLight[0].Direction = XMFLOAT3(0.0f, 0.0f, 1.0f);
 	m_PSConstantBuffer.dirLight[0].Ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
 	m_PSConstantBuffer.dirLight[0].Diffuse = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
@@ -340,6 +342,7 @@ bool GameApp::InitResource()
 	m_PSConstantBuffer.material.Specular = XMFLOAT4(0.1f, 0.1f, 0.1f, 5.0f);
 	// 注意不要忘记设置此处的观察位置，否则高亮部分会有问题
 	m_PSConstantBuffer.eyePos = XMFLOAT4(0.0f, 0.0f, -5.0f, 0.0f);
+
 
 	// 更新PS常量缓冲区资源
 	D3D11_MAPPED_SUBRESOURCE mappedData;

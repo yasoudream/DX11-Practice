@@ -13,6 +13,8 @@ cbuffer VSConstantBuffer : register(b0)
     matrix g_View;  
     matrix g_Proj;  
     matrix g_WorldInvTranspose;
+    float2 rot;
+    float2 pad;
 }
 
 cbuffer PSConstantBuffer : register(b1)
@@ -28,6 +30,7 @@ cbuffer PSConstantBuffer : register(b1)
 
     float3 g_EyePosW;
     float g_Pad2;
+
 }
 
 
@@ -35,7 +38,7 @@ struct VertexPosNormalTex
 {
 	float3 PosL : POSITION;
     float3 NormalL : NORMAL;
-    float2 rot : POSITIONT;
+    //float2 rot : POSITIONT;
 	float2 Tex : TEXCOORD;
 
 };

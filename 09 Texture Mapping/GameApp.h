@@ -15,6 +15,8 @@ public:
 		DirectX::XMMATRIX view;
 		DirectX::XMMATRIX proj;
 		DirectX::XMMATRIX worldInvTranspose;
+		DirectX::XMFLOAT2 rot;
+		DirectX::XMFLOAT2 pad;
 	};
 
 	struct PSConstantBuffer
@@ -28,6 +30,7 @@ public:
 		int numSpotLight;
 		float pad;		// 打包保证16字节对齐
 		DirectX::XMFLOAT4 eyePos;
+
 	};
 
 	enum class ShowMode { WoodCrate, FireAnim };

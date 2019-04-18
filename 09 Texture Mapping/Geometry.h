@@ -80,7 +80,7 @@ private:
 		DirectX::XMFLOAT4 tangent;
 		DirectX::XMFLOAT4 color;
 		DirectX::XMFLOAT2 tex;
-		DirectX::XMFLOAT2 rot;
+		//DirectX::XMFLOAT2 rot;
 	};
 
 	template<class VertexType>
@@ -283,10 +283,10 @@ inline Geometry::MeshData<VertexType, IndexType> Geometry::CreateBox(float width
 		vertexDataArr[i * 4 + 2].tex = XMFLOAT2(1.0f, 0.0f);
 		vertexDataArr[i * 4 + 3].tex = XMFLOAT2(1.0f, 1.0f);
 	}
-	for (int i = 0; i < 24; ++i)
-	{
-		vertexDataArr[i].rot = XMFLOAT2(1, 0);
-	}
+	//for (int i = 0; i < 24; ++i)
+	//{
+	//	vertexDataArr[i].rot = XMFLOAT2(1, 0);
+	//}
 	for (int i = 0; i < 24; ++i)
 	{
 		InsertVertexElement(meshData.vertexVec[i], vertexDataArr[i]);
