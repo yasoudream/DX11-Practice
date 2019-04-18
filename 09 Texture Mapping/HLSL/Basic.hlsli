@@ -2,7 +2,6 @@
 
 Texture2D g_Tex : register(t0);
 Texture2D g_Tex1 : register(t1);
-Texture2D g_Tex2 : register(t2);
 
 SamplerState g_SamLinear : register(s0);
 

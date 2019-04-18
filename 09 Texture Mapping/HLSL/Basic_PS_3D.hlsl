@@ -46,19 +46,7 @@ float4 PS_3D(VertexPosHWNormalTex pIn) : SV_Target
     }
     
 
-    float4 texColor = g_Tex1.Sample(g_SamLinear, pIn.Tex);
-    if (abs(pIn.face.y) > abs(pIn.face.x) && abs(pIn.face.y) > abs(pIn.face.z))
-    {
-        texColor = g_Tex.Sample(g_SamLinear, pIn.Tex);
-    }
-    if (abs(pIn.face.x) > abs(pIn.face.y) && abs(pIn.face.x) > abs(pIn.face.z))
-    {
-        texColor = g_Tex1.Sample(g_SamLinear, pIn.Tex);
-    }
-    if (abs(pIn.face.z) > abs(pIn.face.y) && abs(pIn.face.z) > abs(pIn.face.x))
-    {
-        texColor = g_Tex2.Sample(g_SamLinear, pIn.Tex);
-    }
+    float4 texColor = g_Tex.Sample(g_SamLinear, pIn.Tex);
         
 
 

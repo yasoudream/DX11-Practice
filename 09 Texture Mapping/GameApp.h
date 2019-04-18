@@ -33,7 +33,7 @@ public:
 
 	};
 
-	enum class ShowMode { WoodCrate, FireAnim };
+	enum class ShowMode { WoodCrate, FireAnim, RotCrate };
 
 public:
 	GameApp(HINSTANCE hInstance);
@@ -71,6 +71,7 @@ private:
 	ComPtr<ID3D11ShaderResourceView> m_pWoodCrate;			    // 木盒纹理
 	ComPtr<ID3D11ShaderResourceView> m_pFlareCrate;			    // 火纹理
 	ComPtr<ID3D11ShaderResourceView> m_pAlphaCrate;			    // 不知道什么纹理
+	ComPtr<ID3D11ShaderResourceView> m_pColorCrate[6];			// 六个颜色纹理
 	std::vector<ComPtr<ID3D11ShaderResourceView>> m_pFireAnims; // 火焰纹理集
 	ComPtr<ID3D11SamplerState> m_pSamplerState;				    // 采样器状态
 

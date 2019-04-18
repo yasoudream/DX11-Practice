@@ -116,7 +116,7 @@ void GameApp::UpdateScene(float dt)
 	{
 		// 播放木箱动画
 		m_PSConstantBuffer.numDirLight = 0;
-		m_CurrMode = ShowMode::WoodCrate;
+		m_CurrMode = ShowMode::RotCrate;
 		m_pd3dImmediateContext->IASetInputLayout(m_pVertexLayout3D.Get());
 		auto meshData = Geometry::CreateBox();
 		
@@ -129,7 +129,7 @@ void GameApp::UpdateScene(float dt)
 	}
 
 
-	if (m_CurrMode == ShowMode::WoodCrate)
+	if (m_CurrMode == ShowMode::WoodCrate || m_CurrMode == ShowMode::RotCrate)
 	{
 		static float rot = 0;
 		if (isRot)
@@ -202,7 +202,16 @@ void GameApp::DrawScene()
 	m_pd3dImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	
 	// 绘制几何模型
-	m_pd3dImmediateContext->DrawIndexed(m_IndexCount, 0, 0);
+	if (m_CurrMode == ShowMode::WoodCrate)
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			m_pd3dImmediateContext->PSSetShaderResources(0, 1, m_pColorCrate[i].GetAddressOf());
+			m_pd3dImmediateContext->DrawIndexed(m_IndexCount / 6, i * m_IndexCount / 6, 0);
+		}
+	}
+	else
+		m_pd3dImmediateContext->DrawIndexed(m_IndexCount, 0, 0);
 
 	//
 	// 绘制Direct2D部分
@@ -288,6 +297,13 @@ bool GameApp::InitResource()
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\flare.dds", nullptr, m_pFlareCrate.GetAddressOf()));
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\flarealpha.dds", nullptr, m_pAlphaCrate.GetAddressOf()));
 
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\Blue.dds", nullptr, m_pColorCrate[0].GetAddressOf()));
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\Green.dds", nullptr, m_pColorCrate[1].GetAddressOf()));
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\Orange.dds", nullptr, m_pColorCrate[2].GetAddressOf()));
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\Red.dds", nullptr, m_pColorCrate[3].GetAddressOf()));
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\Yellow.dds", nullptr, m_pColorCrate[4].GetAddressOf()));
+	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\White.dds", nullptr, m_pColorCrate[5].GetAddressOf()));
+
 	// 初始化火焰纹理
 	WCHAR strFile[40];
 	m_pFireAnims.resize(120);
@@ -366,9 +382,6 @@ bool GameApp::InitResource()
 	//m_pd3dImmediateContext->PSSetSamplers(1, 1, m_pSamplerState.GetAddressOf());
 	//m_pd3dImmediateContext->PSSetSamplers(2, 1, m_pSamplerState.GetAddressOf());
 
-	m_pd3dImmediateContext->PSSetShaderResources(0, 1, m_pWoodCrate.GetAddressOf());
-	m_pd3dImmediateContext->PSSetShaderResources(1, 1, m_pFlareCrate.GetAddressOf());
-	m_pd3dImmediateContext->PSSetShaderResources(2, 1, m_pAlphaCrate.GetAddressOf());
 	m_pd3dImmediateContext->PSSetShader(m_pPixelShader3D.Get(), nullptr, 0);
 	
 	
