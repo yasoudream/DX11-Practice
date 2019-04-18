@@ -1,6 +1,8 @@
 #include "GameApp.h"
 #include "d3dUtil.h"
 #include "DXTrace.h"
+#include <string>
+
 using namespace DirectX;
 using namespace std::experimental;
 
@@ -88,16 +90,14 @@ void GameApp::UpdateScene(float dt)
 	if (m_KeyboardTracker.IsKeyPressed(Keyboard::D1))
 	{
 		// 播放木箱动画
-		m_PSConstantBuffer.numDirLight = 1;
 		m_CurrMode = ShowMode::WoodCrate;
+
 		m_pd3dImmediateContext->IASetInputLayout(m_pVertexLayout3D.Get());
 		auto meshData = Geometry::CreateBox();
 		ResetMesh(meshData);
 		m_pd3dImmediateContext->VSSetShader(m_pVertexShader3D.Get(), nullptr, 0);
 		m_pd3dImmediateContext->PSSetShader(m_pPixelShader3D.Get(), nullptr, 0);
-		m_pd3dImmediateContext->PSSetShaderResources(0, 1, m_pWoodCrate.GetAddressOf());
-		m_pd3dImmediateContext->PSSetShaderResources(1, 1, m_pFlareCrate.GetAddressOf());
-		m_pd3dImmediateContext->PSSetShaderResources(2, 1, m_pAlphaCrate.GetAddressOf());
+
 		isRot = false;
 	}
 	else if (m_KeyboardTracker.IsKeyPressed(Keyboard::D2))
@@ -105,22 +105,25 @@ void GameApp::UpdateScene(float dt)
 		m_CurrMode = ShowMode::FireAnim;
 		m_CurrFrame = 0;
 		m_pd3dImmediateContext->IASetInputLayout(m_pVertexLayout2D.Get());
+		
 		auto meshData = Geometry::Create2DShow();
 		ResetMesh(meshData);
 		m_pd3dImmediateContext->VSSetShader(m_pVertexShader2D.Get(), nullptr, 0);
 		m_pd3dImmediateContext->PSSetShader(m_pPixelShader2D.Get(), nullptr, 0);
-		m_pd3dImmediateContext->PSSetShaderResources(0, 1, m_pFireAnims[0].GetAddressOf());
+		m_pd3dImmediateContext->PSSetShaderResources(2, 1, m_pFireAnims.GetAddressOf());
+		
 		isRot = false;
 	}
 	else if (m_KeyboardTracker.IsKeyPressed(Keyboard::D3))
 	{
 		// 播放木箱动画
-		m_PSConstantBuffer.numDirLight = 0;
 		m_CurrMode = ShowMode::RotCrate;
+
 		m_pd3dImmediateContext->IASetInputLayout(m_pVertexLayout3D.Get());
+
 		auto meshData = Geometry::CreateBox();
-		
 		ResetMesh(meshData);
+
 		m_pd3dImmediateContext->VSSetShader(m_pVertexShader3D_rot.Get(), nullptr, 0);
 		m_pd3dImmediateContext->PSSetShader(m_pPixelShader3D_rot.Get(), nullptr, 0);
 		m_pd3dImmediateContext->PSSetShaderResources(0, 1, m_pFlareCrate.GetAddressOf());
@@ -136,11 +139,11 @@ void GameApp::UpdateScene(float dt)
 		{
 			rot += 0.005f;
 			m_VSConstantBuffer.rot = DirectX::XMFLOAT2(cosf(rot), sinf(rot));
-			D3D11_MAPPED_SUBRESOURCE mappedData2;
-			HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[0].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData2));
-			memcpy_s(mappedData2.pData, sizeof(VSConstantBuffer), &m_VSConstantBuffer, sizeof(VSConstantBuffer));
-			m_pd3dImmediateContext->Unmap(m_pConstantBuffers[0].Get(), 0);
-			if (rot >= 360.0f)
+			//D3D11_MAPPED_SUBRESOURCE mappedData;
+			//HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[0].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
+			//memcpy_s(mappedData.pData, sizeof(VSConstantBuffer), &m_VSConstantBuffer, sizeof(VSConstantBuffer));
+			//m_pd3dImmediateContext->Unmap(m_pConstantBuffers[0].Get(), 0);
+			if (rot >= 1440.0f)
 				rot = 0;
 		}
 		//改为鼠标控制
@@ -148,9 +151,6 @@ void GameApp::UpdateScene(float dt)
 		// 获取鼠标状态
 		Mouse::State mouseState = m_pMouse->GetState();
 		Mouse::State lastMouseState = m_MouseTracker.GetLastState();
-		// 获取键盘状态
-		Keyboard::State keyState = m_pKeyboard->GetState();
-		Keyboard::State lastKeyState = m_KeyboardTracker.GetLastState();
 
 		XMFLOAT4X4 tan;
 		XMStoreFloat4x4(&tan, m_VSConstantBuffer.world);
@@ -158,7 +158,6 @@ void GameApp::UpdateScene(float dt)
 
 		// 更新鼠标按钮状态跟踪器，仅当鼠标按住的情况下才进行移动
 		m_MouseTracker.Update(mouseState);
-		m_KeyboardTracker.Update(keyState);
 		if (mouseState.leftButton == true && m_MouseTracker.leftButton == m_MouseTracker.HELD)
 		{
 			cubePhi -= (mouseState.y - lastMouseState.y) * 0.01f;
@@ -188,7 +187,11 @@ void GameApp::UpdateScene(float dt)
 		{
 			totDeltaTime -= 1.0f / 60;
 			m_CurrFrame = (m_CurrFrame + 1) % 120;
-			m_pd3dImmediateContext->PSSetShaderResources(0, 1, m_pFireAnims[m_CurrFrame].GetAddressOf());
+			m_PSConstantBuffer.fireFrame = m_CurrFrame;
+			D3D11_MAPPED_SUBRESOURCE mappedData;
+			HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[1].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
+			memcpy_s(mappedData.pData, sizeof(PSConstantBuffer), &m_PSConstantBuffer, sizeof(PSConstantBuffer));
+			m_pd3dImmediateContext->Unmap(m_pConstantBuffers[1].Get(), 0);
 		}		
 	}
 }
@@ -210,8 +213,11 @@ void GameApp::DrawScene()
 			m_pd3dImmediateContext->DrawIndexed(m_IndexCount / 6, i * m_IndexCount / 6, 0);
 		}
 	}
-	else
+	else if (m_CurrMode == ShowMode::RotCrate || m_CurrMode == ShowMode::FireAnim)
+	{
 		m_pd3dImmediateContext->DrawIndexed(m_IndexCount, 0, 0);
+	}
+		
 
 	//
 	// 绘制Direct2D部分
@@ -222,7 +228,7 @@ void GameApp::DrawScene()
 		static const WCHAR* textStr = L"切换显示: 1-木箱(3D) 2-火焰(2D) 3-迷之箱子\n\
 2019QG工作室手游组第4次小组培训\n\
 张伟景\n\
-2019年4月17日\n";
+2019年4月18日\n";
 		m_pd2dRenderTarget->DrawTextW(textStr, (UINT32)wcslen(textStr), m_pTextFormat.Get(),
 			D2D1_RECT_F{ 20.0f, 20.0f, 600.0f, 200.0f }, m_pColorBrush.Get());
 		HR(m_pd2dRenderTarget->EndDraw());
@@ -304,14 +310,23 @@ bool GameApp::InitResource()
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\Yellow.dds", nullptr, m_pColorCrate[4].GetAddressOf()));
 	HR(CreateDDSTextureFromFile(m_pd3dDevice.Get(), L"Texture\\White.dds", nullptr, m_pColorCrate[5].GetAddressOf()));
 
-	// 初始化火焰纹理
+	 //初始化火焰纹理
 	WCHAR strFile[40];
-	m_pFireAnims.resize(120);
+	std::vector<std::wstring> firefilename;
+	firefilename.resize(120);
+
+	//for (int i = 1; i <= 120; ++i)
+	//{
+	//	wsprintf(strFile, L"Texture\\FireAnim\\Fire%03d.bmp", i);
+	//	HR(CreateWICTextureFromFile(m_pd3dDevice.Get(), strFile, nullptr, m_pFireAnims[i - 1].GetAddressOf()));
+	//}
 	for (int i = 1; i <= 120; ++i)
 	{
 		wsprintf(strFile, L"Texture\\FireAnim\\Fire%03d.bmp", i);
-		HR(CreateWICTextureFromFile(m_pd3dDevice.Get(), strFile, nullptr, m_pFireAnims[i - 1].GetAddressOf()));
+		firefilename[i - 1] = strFile;
 	}
+
+	CreateWTCTexture2DArrayFromFile(m_pd3dDevice.Get(), m_pd3dImmediateContext.Get(), firefilename, nullptr, m_pFireAnims.GetAddressOf(), false);
 		
 	// 初始化采样器状态
 	D3D11_SAMPLER_DESC sampDesc;
@@ -358,7 +373,7 @@ bool GameApp::InitResource()
 	m_PSConstantBuffer.material.Specular = XMFLOAT4(0.1f, 0.1f, 0.1f, 5.0f);
 	// 注意不要忘记设置此处的观察位置，否则高亮部分会有问题
 	m_PSConstantBuffer.eyePos = XMFLOAT4(0.0f, 0.0f, -5.0f, 0.0f);
-
+	m_PSConstantBuffer.fireFrame = 0;
 
 	// 更新PS常量缓冲区资源
 	D3D11_MAPPED_SUBRESOURCE mappedData;
@@ -383,7 +398,6 @@ bool GameApp::InitResource()
 	//m_pd3dImmediateContext->PSSetSamplers(2, 1, m_pSamplerState.GetAddressOf());
 
 	m_pd3dImmediateContext->PSSetShader(m_pPixelShader3D.Get(), nullptr, 0);
-	
 	
 	// 像素着色阶段默认设置木箱纹理
 	m_CurrMode = ShowMode::WoodCrate;

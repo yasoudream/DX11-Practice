@@ -28,8 +28,10 @@ public:
 		int numDirLight;
 		int numPointLight;
 		int numSpotLight;
-		float pad;		// 打包保证16字节对齐
+		//int pad;	// 打包保证16字节对齐
+		int fireFrame;
 		DirectX::XMFLOAT4 eyePos;
+		
 
 	};
 
@@ -72,7 +74,10 @@ private:
 	ComPtr<ID3D11ShaderResourceView> m_pFlareCrate;			    // 火纹理
 	ComPtr<ID3D11ShaderResourceView> m_pAlphaCrate;			    // 不知道什么纹理
 	ComPtr<ID3D11ShaderResourceView> m_pColorCrate[6];			// 六个颜色纹理
-	std::vector<ComPtr<ID3D11ShaderResourceView>> m_pFireAnims; // 火焰纹理集
+
+	//std::vector<ComPtr<ID3D11ShaderResourceView>> m_pFireAnims; // 火焰纹理集
+
+	ComPtr<ID3D11ShaderResourceView> m_pFireAnims;				// 火焰纹理集
 	ComPtr<ID3D11SamplerState> m_pSamplerState;				    // 采样器状态
 
 	ComPtr<ID3D11VertexShader> m_pVertexShader3D;				// 用于3D的顶点着色器

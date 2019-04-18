@@ -25,6 +25,7 @@ struct VertexPosColor
 	static const D3D11_INPUT_ELEMENT_DESC inputLayout[2];
 };
 
+//2D¶¥µã
 struct VertexPosTex
 {
 	DirectX::XMFLOAT3 pos;
